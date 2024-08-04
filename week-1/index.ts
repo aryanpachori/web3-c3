@@ -33,4 +33,4 @@ function nonce(prefix : string, word : string){
         input++;
     }
 }
-nonce("00000", "islets")
+nonce("00000", "Ram => Ankit | Rs 10")
