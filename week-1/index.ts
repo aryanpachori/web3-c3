@@ -33,4 +33,21 @@ function nonce(prefix : string, word : string){
         input++;
     }
 }
-nonce("00000", "Ram => Ankit | Rs 10")
+// nonce("00000", "Ram => Ankit | Rs 10")
+
+function asciiToBytes(asciiString : string) {
+    const byteArray = [];
+    for (let i = 0; i < asciiString.length; i++) {
+      byteArray.push(asciiString.charCodeAt(i));
+    }
+    return byteArray;
+  }
+  
+  
+  const ascii = "Hello";
+  const byteArray = asciiToBytes(ascii);
+  console.log(byteArray); 
+
+  const uint8Array = new Uint8Array([72, 101, 108, 108, 111]);
+const base64Encoded = Buffer.from(uint8Array).toString("base64");
+console.log(base64Encoded);
