@@ -1,6 +1,10 @@
 import { Input } from "@/components/ui/input";
 import {
+  createAssociatedTokenAccount,
+  createAssociatedTokenAccountInstruction,
   createInitializeMint2Instruction,
+  createMintToInstruction,
+  getAssociatedTokenAddressSync,
   getMinimumBalanceForRentExemptMint,
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
@@ -15,7 +19,9 @@ import {
   Transaction,
 } from "@solana/web3.js";
 export default function Launchpad() {
-  const connection = new Connection("https://solana-devnet.g.alchemy.com/v2/qlsrTkNGjnuK46GWAC2AVAaVnVZ2ylVf");
+  const connection = new Connection(
+    "https://solana-devnet.g.alchemy.com/v2/qlsrTkNGjnuK46GWAC2AVAaVnVZ2ylVf"
+  );
   const wallet = useWallet();
 
   async function createMint() {
@@ -23,7 +29,7 @@ export default function Launchpad() {
       try {
         const keyPair = Keypair.generate();
         const lamport = await getMinimumBalanceForRentExemptMint(connection);
-  
+
         const transaction = new Transaction().add(
           SystemProgram.createAccount({
             fromPubkey: wallet.publicKey,
@@ -40,20 +46,51 @@ export default function Launchpad() {
             TOKEN_PROGRAM_ID
           )
         );
-  
+
         transaction.feePayer = wallet.publicKey;
         const { blockhash } = await connection.getLatestBlockhash();
         transaction.recentBlockhash = blockhash;
         transaction.partialSign(keyPair);
-  
         await wallet.sendTransaction(transaction, connection);
         console.log(`Token mint created at ${keyPair.publicKey.toBase58()}`);
+
+        const ata = getAssociatedTokenAddressSync(
+          keyPair.publicKey,
+          wallet.publicKey,
+          false,
+          TOKEN_PROGRAM_ID
+        );
+        console.log(ata.toBase58());
+
+        const transaction2 = new Transaction().add(
+          createAssociatedTokenAccountInstruction(
+            wallet.publicKey,
+            ata,
+            wallet.publicKey,
+            keyPair.publicKey,
+            TOKEN_PROGRAM_ID
+          )
+        );
+        await wallet.sendTransaction(transaction2, connection);
+
+        const transaction3 = new Transaction().add(
+          createMintToInstruction(
+            keyPair.publicKey,
+            ata,
+            wallet.publicKey,
+            1000000000,
+            [],
+            TOKEN_PROGRAM_ID
+          )
+        );
+        await wallet.sendTransaction(transaction3, connection);
+        console.log("Minted!")
       } catch (error) {
         console.error("Transaction failed:", error);
       }
     }
   }
-  
+
   return (
     <div className="flex flex-col justify-center items-center min-h-screen text-center  ">
       <h1 className="text-6xl font-bold font-mono ">Solana token launchpad</h1>
