@@ -1,17 +1,44 @@
-import { Input } from "@/components/ui/input";
+"use client";
+import Launchpad from "@/components/launchpad";
+import React, { useMemo } from "react";
+import {
+  ConnectionProvider,
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 
+import {
+  WalletModalProvider,
+  WalletDisconnectButton,
+  WalletMultiButton,
+  WalletConnectButton,
+} from "@solana/wallet-adapter-react-ui";
+import { clusterApiUrl } from "@solana/web3.js";
+import "@solana/wallet-adapter-react-ui/styles.css";
 export default function Home() {
-  return (
-    <div className="flex flex-col justify-center items-center h-screen text-center ">
-      <h1 className="text-5xl font-bold">Solana token launchpad</h1>
+  const network = WalletAdapterNetwork.Devnet;
 
-      <div className="mt-5 space-y-4  w-64">
-        <Input placeholder="John Doe" />
-        <Input placeholder="Symbol" />
-        <Input placeholder="Image URL" />
-        <Input placeholder="Inital supply" />
-        <button className="border border-gray-800 rounded p-2 bg-gray-900">Create Token</button>
-      </div>
+  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+
+  const wallets = useMemo(
+    () => [],
+
+    [network]
+  );
+  return (
+    <div className="h-screen overflow-hidden">
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect>
+          <WalletModalProvider>
+            <div className="flex justify-between m-4">
+              <WalletMultiButton />
+              <WalletDisconnectButton />
+            </div>
+
+            <Launchpad />
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
     </div>
   );
 }
